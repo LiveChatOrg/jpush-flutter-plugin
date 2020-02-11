@@ -40,8 +40,8 @@ static NSMutableArray<FlutterResult>* getRidResults;
                                      binaryMessenger:[registrar messenger]];
     JPushPlugin* instance = [[JPushPlugin alloc] init];
     instance.channel = channel;
-    
-    
+
+
     [registrar addApplicationDelegate:instance];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -50,20 +50,20 @@ static NSMutableArray<FlutterResult>* getRidResults;
     self = [super init];
     notificationTypes = 0;
     NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
-    
+
     [defaultCenter removeObserver:self];
-    
-    
+
+
     [defaultCenter addObserver:self
                       selector:@selector(networkConnecting:)
                           name:kJPFNetworkIsConnectingNotification
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(networkRegister:)
                           name:kJPFNetworkDidRegisterNotification
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(networkDidSetup:)
                           name:kJPFNetworkDidSetupNotification
@@ -114,7 +114,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     JPLog(@"handleMethodCall:%@",call.method);
-    
+
     if ([@"getPlatformVersion" isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if([@"setup" isEqualToString:call.method]) {
@@ -173,7 +173,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
     } else {
         [JPUSHService setLogOFF];
     }
-    
+
     [JPUSHService setupWithOption:_launchNotification
                            appKey:arguments[@"appKey"]
                           channel:arguments[@"channel"]
@@ -201,11 +201,11 @@ static NSMutableArray<FlutterResult>* getRidResults;
 - (void)setTags:(FlutterMethodCall*)call result:(FlutterResult)result {
     JPLog(@"setTags:%@",call.arguments);
     NSSet *tagSet;
-    
+
     if (call.arguments != NULL) {
         tagSet = [NSSet setWithArray: call.arguments];
     }
-    
+
     [JPUSHService setTags:tagSet completion:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
         if (iResCode == 0) {
             result(@{@"tags": [iTags allObjects] ?: @[]});
@@ -231,11 +231,11 @@ static NSMutableArray<FlutterResult>* getRidResults;
 - (void)addTags:(FlutterMethodCall*)call result:(FlutterResult)result {
     JPLog(@"addTags:%@",call.arguments);
     NSSet *tagSet;
-    
+
     if (call.arguments != NULL) {
         tagSet = [NSSet setWithArray:call.arguments];
     }
-    
+
     [JPUSHService addTags:tagSet completion:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
         if (iResCode == 0) {
             result(@{@"tags": [iTags allObjects] ?: @[]});
@@ -249,11 +249,11 @@ static NSMutableArray<FlutterResult>* getRidResults;
 - (void)deleteTags:(FlutterMethodCall*)call result:(FlutterResult)result {
     JPLog(@"deleteTags:%@",call.arguments);
     NSSet *tagSet;
-    
+
     if (call.arguments != NULL) {
         tagSet = [NSSet setWithArray:call.arguments];
     }
-    
+
     [JPUSHService deleteTags:tagSet completion:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
         if (iResCode == 0) {
             result(@{@"tags": [iTags allObjects] ?: @[]});
@@ -317,7 +317,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 - (void)clearAllNotifications:(FlutterMethodCall*)call result:(FlutterResult)result {
     JPLog(@"clearAllNotifications:");
-    
+
     if (@available(iOS 10.0, *)) {
         //iOS 10 以上支持
         JPushNotificationIdentifier *identifier = [[JPushNotificationIdentifier alloc] init];
@@ -331,14 +331,14 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 - (void)clearNotification:(FlutterMethodCall*)call result:(FlutterResult)result {
     JPLog(@"clearNotification:");
-    
+
     NSNumber *notificationId = call.arguments;
     if (!notificationId) {
         return ;
     }
     JPushNotificationIdentifier *identifier = [[JPushNotificationIdentifier alloc] init];
     identifier.identifiers = @[notificationId.stringValue];
-    
+
     if (@available(iOS 10.0, *)) {
         //iOS 10 以上有效，等于 YES 则在通知中心显示的里面移除，等于 NO 则为在待推送的里面移除；iOS 10 以下无效
         identifier.delivered = YES;
@@ -359,14 +359,14 @@ static NSMutableArray<FlutterResult>* getRidResults;
     NSLog(@"simulator can not get registrationid");
     result(@"");
 #elif TARGET_OS_IPHONE//真机
-    
-    
+
+
     if ([JPUSHService registrationID] != nil && ![[JPUSHService registrationID] isEqualToString:@""]) {
         // 如果已经成功获取 registrationID，从本地获取直接缓存
         result([JPUSHService registrationID]);
         return;
     }
-    
+
     if (_isJPushDidLogin) {// 第一次获取未登录情况
         result(@[[JPUSHService registrationID]]);
     } else {
@@ -382,31 +382,31 @@ static NSMutableArray<FlutterResult>* getRidResults;
     if (params[@"title"]) {
         content.title = params[@"title"];
     }
-    
+
     if (params[@"subtitle"] && ![params[@"subtitle"] isEqualToString:@"<null>"]) {
         content.subtitle = params[@"subtitle"];
     }
-    
+
     if (params[@"content"]) {
         content.body = params[@"content"];
     }
-    
+
     if (params[@"badge"]) {
         content.badge = params[@"badge"];
     }
-    
+
     if (params[@"action"] && ![params[@"action"] isEqualToString:@"<null>"]) {
         content.action = params[@"action"];
     }
-    
+
     if ([params[@"extra"] isKindOfClass:[NSDictionary class]]) {
         content.userInfo = params[@"extra"];
     }
-    
+
     if (params[@"sound"] && ![params[@"sound"] isEqualToString:@"<null>"]) {
         content.sound = params[@"sound"];
     }
-    
+
     JPushNotificationTrigger *trigger = [[JPushNotificationTrigger alloc] init];
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 10.0) {
         if (params[@"fireTime"]) {
@@ -417,7 +417,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
             trigger.timeInterval = interval;
         }
     }
-    
+
     else {
         if (params[@"fireTime"]) {
             NSNumber *date = params[@"fireTime"];
@@ -427,7 +427,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
     JPushNotificationRequest *request = [[JPushNotificationRequest alloc] init];
     request.content = content;
     request.trigger = trigger;
-    
+
     if (params[@"id"]) {
         NSNumber *identify = params[@"id"];
         request.requestIdentifier = [identify stringValue];
@@ -435,34 +435,34 @@ static NSMutableArray<FlutterResult>* getRidResults;
     request.completionHandler = ^(id result) {
         NSLog(@"result");
     };
-    
+
     [JPUSHService addNotification:request];
-    
+
     result(@[@[]]);
 }
 
 /// 检查当前应用的通知开关是否开启
 - (void)isNotificationEnabled:(FlutterMethodCall*)call result:(FlutterResult)result  {
-    JPLog(@"isNotificationEnabled:");
-    [JPUSHService requestNotificationAuthorization:^(JPAuthorizationStatus status) {
-        BOOL isEnabled = NO;
-        if (status == JPAuthorizationStatusAuthorized) {
-            isEnabled = YES;
-        }
-        
-        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:isEnabled],@"isEnabled", nil];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            result(dict);
-        });
-    }];
-   
-    
+    // JPLog(@"isNotificationEnabled:");
+    // [JPUSHService requestNotificationAuthorization:^(JPAuthorizationStatus status) {
+    //     BOOL isEnabled = NO;
+    //     if (status == JPAuthorizationStatusAuthorized) {
+    //         isEnabled = YES;
+    //     }
+
+    //     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:isEnabled],@"isEnabled", nil];
+    //     dispatch_async(dispatch_get_main_queue(), ^{
+    //         result(dict);
+    //     });
+    // }];
+
+
 }
 - (void)openSettingsForNotification {
-    JPLog(@"openSettingsForNotification:");
-    [JPUSHService openSettingsForNotification:^(BOOL success) {
-        JPLog(@"openSettingsForNotification: %@",@(success));
-    }];
+    // JPLog(@"openSettingsForNotification:");
+    // [JPUSHService openSettingsForNotification:^(BOOL success) {
+    //     JPLog(@"openSettingsForNotification: %@",@(success));
+    // }];
 }
 
 
@@ -476,12 +476,12 @@ static NSMutableArray<FlutterResult>* getRidResults;
 #pragma mark - AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+
     if (launchOptions != nil) {
         _launchNotification = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
         _launchNotification = [self jpushFormatAPNSDic:_launchNotification.copy];
     }
-    
+
     if ([launchOptions valueForKey:UIApplicationLaunchOptionsLocalNotificationKey]) {
         UILocalNotification *localNotification = [launchOptions valueForKey:UIApplicationLaunchOptionsLocalNotificationKey];
         NSMutableDictionary *localNotificationEvent = @{}.mutableCopy;
@@ -490,7 +490,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
         localNotificationEvent[@"extras"] = localNotification.userInfo;
         localNotificationEvent[@"fireTime"] = [NSNumber numberWithLong:[localNotification.fireDate timeIntervalSince1970] * 1000];
         localNotificationEvent[@"soundName"] = [localNotification.soundName isEqualToString:UILocalNotificationDefaultSoundName] ? @"" : localNotification.soundName;
-        
+
         if (@available(iOS 8.2, *)) {
             localNotificationEvent[@"title"] = localNotification.alertTitle;
         }
@@ -511,7 +511,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 - (bool)application:(UIApplication *)application
 didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-    
+
     [_channel invokeMethod:@"onReceiveNotification" arguments:userInfo];
     completionHandler(UIBackgroundFetchResultNoData);
     return YES;
@@ -535,13 +535,13 @@ didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSe
 
 
 - (void)jpushNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(NSInteger))completionHandler  API_AVAILABLE(ios(10.0)){
-    
+
     NSDictionary * userInfo = notification.request.content.userInfo;
     if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
         [JPUSHService handleRemoteNotification:userInfo];
         [_channel invokeMethod:@"onReceiveNotification" arguments: [self jpushFormatAPNSDic:userInfo]];
     }
-    
+
     completionHandler(notificationTypes);
 }
 
@@ -555,17 +555,17 @@ didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSe
 }
 
 - (void)jpushNotificationAuthorization:(JPAuthorizationStatus)status withInfo:(NSDictionary *)info {
-    BOOL isEnabled = NO;
-    if (status == JPAuthorizationStatusAuthorized) {
-        isEnabled = YES;
-    }
-    
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:isEnabled],@"isEnabled", nil];
-    __weak typeof(self) weakself = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __strong typeof(self) strongself = weakself;
-        [strongself.channel invokeMethod:@"onReceiveNotificationAuthorization" arguments: dict];
-    });
+    // BOOL isEnabled = NO;
+    // if (status == JPAuthorizationStatusAuthorized) {
+    //     isEnabled = YES;
+    // }
+
+    // NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:isEnabled],@"isEnabled", nil];
+    // __weak typeof(self) weakself = self;
+    // dispatch_async(dispatch_get_main_queue(), ^{
+    //     __strong typeof(self) strongself = weakself;
+    //     [strongself.channel invokeMethod:@"onReceiveNotificationAuthorization" arguments: dict];
+    // });
 }
 - (NSMutableDictionary *)jpushFormatAPNSDic:(NSDictionary *)dic {
     NSMutableDictionary *extras = @{}.mutableCopy;
